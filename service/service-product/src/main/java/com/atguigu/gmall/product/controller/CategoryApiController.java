@@ -23,6 +23,7 @@ public class CategoryApiController {
 
     @Autowired
     private BaseCategoryService baseCategoryService;
+    //以下方法都是平台一级二级分类查询的方法接口
     @GetMapping("getCategory1")
     public Result getCategory1(){
     List<BaseCategory1> category1List=baseCategoryService.getCategory1List();
