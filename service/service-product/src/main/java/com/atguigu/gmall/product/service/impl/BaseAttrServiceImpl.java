@@ -2,8 +2,10 @@ package com.atguigu.gmall.product.service.impl;
 
 import com.atguigu.gmall.model.product.BaseAttrInfo;
 import com.atguigu.gmall.model.product.BaseAttrValue;
+import com.atguigu.gmall.model.product.BaseSaleAttr;
 import com.atguigu.gmall.product.mapper.BaseAttrInfoMapper;
 import com.atguigu.gmall.product.mapper.BaseAttrValueMapper;
+import com.atguigu.gmall.product.mapper.BaseSaleAttrMapper;
 import com.atguigu.gmall.product.service.BaseAttrService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,8 @@ public class BaseAttrServiceImpl implements BaseAttrService {
     private BaseAttrInfoMapper baseAttrInfoMapper;
     @Autowired
     private BaseAttrValueMapper baseAttrValueMapper;
+    @Autowired
+    private BaseSaleAttrMapper baseSaleAttrMapper;
 
     @Override
     public List<BaseAttrInfo> attrInfoList(Long cartegory3Id) {
@@ -67,5 +71,19 @@ public class BaseAttrServiceImpl implements BaseAttrService {
             baseAttrValue.setAttrId(id);
             baseAttrValueMapper.insert(baseAttrValue);
         }
+    }
+
+    /***
+     * @author Kilig Zong
+     * @date 2020/11/30 12:06
+     * @description 查询平台属性的值
+     * @param
+     * @return java.util.List<com.atguigu.gmall.model.product.BaseSaleAttr>
+     **/
+    @Override
+    public List<BaseSaleAttr> baseSaleAttrList() {
+        QueryWrapper<BaseSaleAttr> wrapper = new QueryWrapper<>();
+        List<BaseSaleAttr> baseSaleAttrList = baseSaleAttrMapper.selectList(wrapper);
+        return baseSaleAttrList;
     }
 }
