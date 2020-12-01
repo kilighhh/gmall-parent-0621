@@ -5,11 +5,10 @@
 <mapper namespace="com.atguigu.gmall.product.mapper.BaseAttrInfoMapper">
     <select id="selectAttrInfoList" resultMap="selectAttrInfoListMap">
         select ai.id as ai_id, av.id as av_id ,ai.*,av.*
-        from base_attr_info ai ,base_attr_value av
-        WHERE ai.category_id =#{cartegory3Id}
-        and ai.category_level= #{categoryLevel}
-        and ai.id =av.attr_id
-
+        from base_attr_info ai left join base_attr_value av
+        on  ai.id =av.attr_id
+        where ai.category_level= #{categoryLevel}
+        and ai.category_id =#{cartegory3Id}
     </select>
     <resultMap id="selectAttrInfoListMap" type="com.atguigu.gmall.model.product.BaseAttrInfo" autoMapping="true">
         <id property="id" column="ai_id"></id>

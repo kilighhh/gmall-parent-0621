@@ -98,4 +98,43 @@ public class SupInfoServiceImpl implements SupInfoService {
 
 
     }
+
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/1 16:13
+     * @description 查询spu的图片集合
+     * @param spuId
+     * @return java.util.List<com.atguigu.gmall.model.product.SpuImage>
+     **/
+    @Override
+    public List<SpuImage> spuImageList(Long spuId) {
+        QueryWrapper<SpuImage> wrapper = new QueryWrapper<>();
+        wrapper.eq("spu_id",spuId);
+        List<SpuImage> spuImageList = supImageMapper.selectList(wrapper);
+        return spuImageList;
+    }
+
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/1 16:13
+     * @description 查询spu的销售属性以及他的值
+     * @param spuId
+     * @return java.util.List<com.atguigu.gmall.model.product.SpuSaleAttr>
+     **/
+    @Override
+    public List<SpuSaleAttr> spuSaleAttrList(Long spuId) {
+        QueryWrapper<SpuSaleAttr> spuSaleAttrQueryWrapper = new QueryWrapper<>();
+        spuSaleAttrQueryWrapper.eq("spu_id",spuId);
+        List<SpuSaleAttr> spuSaleAttrList = spuSaleAttrMapper.selectList(spuSaleAttrQueryWrapper);
+        if(null!=spuSaleAttrList){
+            for (SpuSaleAttr spuSaleAttr : spuSaleAttrList) {
+                QueryWrapper<SpuSaleAttrValue> spuSaleAttrValueQueryWrapper = new QueryWrapper<>();
+                spuSaleAttrValueQueryWrapper.eq("spu_id",spuId);
+                spuSaleAttrValueQueryWrapper.eq("base_sale_attr_id",spuSaleAttr.getBaseSaleAttrId());
+                List<SpuSaleAttrValue> spuSaleAttrValueList = spuSaleAttrValueMapper.selectList(spuSaleAttrValueQueryWrapper);
+                spuSaleAttr.setSpuSaleAttrValueList(spuSaleAttrValueList);
+            }
+        }
+        return spuSaleAttrList;
+    }
 }
