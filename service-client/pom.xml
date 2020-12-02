@@ -6,7 +6,20 @@
 
     <groupId>com.atguigu.gmall</groupId>
     <artifactId>service-client</artifactId>
+    <packaging>pom</packaging>
     <version>1.0</version>
+    <modules>
+        <module>service-item-client</module>
+        <module>service-product-client</module>
+    </modules>
 
-    
+    <dependencies>
+        <dependency>
+            <groupId>com.atguigu.gmall</groupId>
+            <artifactId>common-util</artifactId>
+            <version>1.0</version>
+        </dependency>
+    </dependencies>
+
+
 </project>

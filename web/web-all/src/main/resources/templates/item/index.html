@@ -50,15 +50,15 @@
         <div class="crumb-wrap">
             <ul class="sui-breadcrumb">
                 <li>
-                    <a th:href="@{http://list.gmall.com/list.html?category1Id={category1Id}(category1Id=${categoryView.category1Id})}" th:text="${categoryView.category1Name}">手机、数码、通讯</a>
+                    <a th:href="@{http://list.gmall.com/list.html?category1Id={category1Id}(category1Id=${categoryView?.category1Id})}" th:text="${categoryView?.category1Name}">手机、数码、通讯</a>
                 </li>
                 <li>
-                    <a th:href="@{http://list.gmall.com/list.html?category2Id={category2Id}(category2Id=${categoryView.category2Id})}" th:text="${categoryView.category2Name}">手机</a>
+                    <a th:href="@{http://list.gmall.com/list.html?category2Id={category2Id}(category2Id=${categoryView?.category2Id})}" th:text="${categoryView?.category2Name}">手机</a>
                 </li>
                 <li>
-                    <a th:href="@{http://list.gmall.com/list.html?category3Id={category3Id}(category3Id=${categoryView.category3Id})}" th:text="${categoryView.category3Name}">Apple苹果</a>
+                    <a th:href="@{http://list.gmall.com/list.html?category3Id={category3Id}(category3Id=${categoryView?.category3Id})}" th:text="${categoryView?.category3Name}">Apple苹果</a>
                 </li>
-                <li class="active" th:text="${skuInfo.skuName}">iphone 6S系类</li>
+                <li class="active" th:text="${skuInfo?.skuName}">iphone 6S系类</li>
             </ul>
         </div>
         <!--product-info-->
@@ -69,7 +69,7 @@
                     <!--默认第一个预览-->
                     <div id="preview" class="spec-preview">
 							<span class="jqzoom">
-								<img th:jqimg="${skuInfo.skuDefaultImg}" th:src="${skuInfo.skuDefaultImg}" width="400" height="400"/>
+								<img th:jqimg="${skuInfo?.skuDefaultImg}" th:src="${skuInfo?.skuDefaultImg}" width="400" height="400"/>
 							</span>
                     </div>
                     <!--下方的缩略图-->
@@ -78,7 +78,7 @@
                         <!--左右按钮-->
                         <div class="items">
                             <ul>
-                                <li th:each="skuImage: ${skuInfo.skuImageList}">
+                                <li th:each="skuImage: ${skuInfo?.skuImageList}">
                                     <img th:src="${skuImage.imgUrl}" th:bimg="${skuImage.imgUrl}" onmousemove="preview(this)"/>
                                 </li>
                             </ul>
@@ -89,7 +89,7 @@
             </div>
             <div class="fr itemInfo-wrap" id="app">
                 <div class="sku-name">
-                    <h4 th:text="${skuInfo.skuName}"></h4>
+                    <h4 th:text="${skuInfo?.skuName}"></h4>
                 </div>
                 <div class="news">
                     <span>推荐选择下方[移动优惠购],手机套餐齐搞定,不用换号,每月还有花费返</span>
@@ -141,7 +141,7 @@
                             <i>重   量</i>
                         </div>
                         <div class="fl fix-width">
-                            <em class="t-gray" th:text="${skuInfo.weight}"></em>
+                            <em class="t-gray" th:text="${skuInfo?.weight}"></em>
                         </div>
                     </div>
                 </div>
@@ -1002,7 +1002,7 @@
     var item = new Vue({
         el: '#itemArray',
         data: {
-            skuId: [[${skuInfo.id}]],
+            skuId: [[${skuInfo?.id}]],
             valuesSku: '',
             skuNum: 1,
 

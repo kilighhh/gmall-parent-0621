@@ -28,7 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("admin/product/")
 @CrossOrigin
 public class FileLoadApiController {
-    @Value("${fileUrl}")
+    @Value("${fileUrl}")//nginx的地址，在配置文件里面配置
     private String fileUrl;
     /***
      * @author Kilig Zong

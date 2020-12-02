@@ -3,8 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <style>
+        .red{
+            background-color: red;
+            height: 100px;
+            width: 100px;
+        }
+        .green{
+            background-color: green;
+            height: 100px;
+            width: 100px;
+        }
+    </style>
+
+    <script language="JavaScript">
+        function a(num){
+            alert(num);
+        }
+    </script>
+    <script language="JavaScript">
+        function a(num){
+            alert(num);
+        }
+    </script>
 </head>
 <body>
+    取值：
     <input value = "1" th:value="${hello}"/>
+    <br>
+
+    循环：
+    <input value="1" th:each="str:${list}" th:value="${str}">
+    <p th:each="str:${list}">
+        <input value="1" th:value="${str}">
+    </p>
+    <br>
+    判断：
+    <input value="存在即是合理" th:if="${1==0}">
+    <div class="green" th:class="(${1==1}?red:green)"></div>
+    <br>
+    js交互：
+    <a href="javascript:a('猛男');" th:href="'javascript:a(\''+${num}+'\');'">点我</a>
 </body>
 </html>

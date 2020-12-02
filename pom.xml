@@ -9,7 +9,6 @@
         <module>web</module>
         <module>service-client</module>
         <module>module</module>
-        <module>web-all</module>
     </modules>
 
     <parent>

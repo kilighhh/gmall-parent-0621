@@ -12,11 +12,9 @@
     <artifactId>common</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>common-util</module>
         <module>service-util</module>
         <module>web-util</module>
         <module>common-util</module>
-        <module>service-util</module>
     </modules>
 
 
@@ -44,19 +42,15 @@
             <artifactId>springfox-swagger-ui</artifactId>
         </dependency>
 
-        <!-- 服务调用feign -->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-openfeign</artifactId>
-        </dependency>
+
 
         <!-- 服务注册-->
-        <!--
+
                 <dependency>
                     <groupId>org.springframework.cloud</groupId>
                     <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
                 </dependency>
-        -->
+
 
         <!-- 服务配置-->
         <!--<dependency>-->
@@ -71,6 +65,7 @@
                     <artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
                 </dependency>
         -->
+
 
     </dependencies>
 </project>
