@@ -61,7 +61,7 @@ public class ItemServiceImpl implements ItemService {
         map.put("categoryView",categoryView);
         map.put("spuSaleAttrList",spuSaleAttrList);
         map.put("skuInfo",skuInfo);
-     map.put("price",price);
+        map.put("price",price);
         return map;
     }
 }
