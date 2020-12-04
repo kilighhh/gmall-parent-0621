@@ -4,10 +4,7 @@ import com.atguigu.gmall.model.product.SpuImage;
 import com.atguigu.gmall.model.product.SpuInfo;
 import com.atguigu.gmall.model.product.SpuSaleAttr;
 import com.atguigu.gmall.model.product.SpuSaleAttrValue;
-import com.atguigu.gmall.product.mapper.SpuSaleAttrMapper;
-import com.atguigu.gmall.product.mapper.SpuSaleAttrValueMapper;
-import com.atguigu.gmall.product.mapper.SupImageMapper;
-import com.atguigu.gmall.product.mapper.SupInfoMapper;
+import com.atguigu.gmall.product.mapper.*;
 import com.atguigu.gmall.product.service.SupInfoService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -15,7 +12,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author Kilig Zong
@@ -33,6 +32,8 @@ public class SupInfoServiceImpl implements SupInfoService {
     private SpuSaleAttrMapper spuSaleAttrMapper;
     @Autowired
     private SpuSaleAttrValueMapper spuSaleAttrValueMapper;
+    @Autowired
+    private SkuSaleAttrValueMapper skuSaleAttrValueMapper;
 
     /***
      * @author Kilig Zong
@@ -136,5 +137,41 @@ public class SupInfoServiceImpl implements SupInfoService {
             }
         }
         return spuSaleAttrList;
+    }
+
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/4 12:04
+     * @description 查询销售属性表以及销售属性值表，并且携带被选中的属性设置为1
+     * @param spuId
+     * @param skuId
+     * @return java.util.List<com.atguigu.gmall.model.product.SpuSaleAttr>
+     **/
+    @Override
+    public List<SpuSaleAttr> getSpuSaleAttrListCheckBySku(Long spuId, Long skuId) {
+        List<SpuSaleAttr> spuSaleAttrList=skuSaleAttrValueMapper.selectSpuSaleAttrListCheckBySku(spuId,skuId);
+        return spuSaleAttrList;
+    }
+
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/4 15:23
+     * @description 我们根据spuId来查询中间表，mybatis的返回值是一个Map
+     * @param spuId
+     * @return java.util.Map<java.lang.String, java.lang.Long>
+     **/
+    @Override
+    public Map<String, Long> getValueIdsMap(Long spuId) {
+      List<Map> saleMaps= skuSaleAttrValueMapper.selectValueIdsMap(spuId);
+      //创建一个map返回回去
+        Map<String, Long> idsMap = new HashMap<>();
+        for (Map saleMap : saleMaps) {
+            //根据数据库封装查询出来的map结构获取到值，封装成我们需要返回回去的Key
+            String key = (String) saleMap.get("values_Ids");
+            //根据数据库封装查询出来的map结构获取到值，封装成我们需要返回回去的Value
+          Long value =(Long)saleMap.get("sku_id");
+            idsMap.put(key,value);
+        }
+        return idsMap;
     }
 }

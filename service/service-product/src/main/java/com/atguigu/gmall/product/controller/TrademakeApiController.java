@@ -22,6 +22,13 @@ public class TrademakeApiController {
     @Autowired
     private BaseTrademarkService trademarkService;
 
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/3 14:51
+     * @description 品牌查询
+     * @param
+     * @return com.atguigu.gamll.common.result.Result
+     **/
     @RequestMapping("baseTrademark/getTrademarkList")
     public Result getTrademarkList(){
     List<BaseTrademark> trademarks = trademarkService.getTrademarkList();

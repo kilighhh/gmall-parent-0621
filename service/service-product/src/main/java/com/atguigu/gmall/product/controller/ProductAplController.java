@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author Kilig Zong
@@ -59,13 +60,26 @@ public class ProductAplController {
     /***
      * @author Kilig Zong
      * @date 2020/12/2 19:45
-     * @description 查勋销售属性的数据，以及它值也需要查询
+     * @description 查勋销售属性的数据，以及它值也需要查询  此方法被弃用
      * @param spuId
      * @return java.util.List<com.atguigu.gmall.model.product.SpuSaleAttr>
      **/
     @RequestMapping("getSpuSaleAttrBySpuId/{spuId}")
    public List<SpuSaleAttr> getSpuSaleAttrBySpuId(@PathVariable("spuId")Long spuId){
         List<SpuSaleAttr> spuSaleAttrList = supInfoService.spuSaleAttrList(spuId);
+        return spuSaleAttrList;
+    }
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/4 12:02
+     * @description 查询spu销售属性以及销售属性值，并且携带被默认选中的属性设置为1
+     * @param spuId
+     * @param skuId
+     * @return java.util.List<com.atguigu.gmall.model.product.SpuSaleAttr>
+     **/
+    @RequestMapping("getSpuSaleAttrListCheckBySku/{spuId}/{skuId}")
+  public   List<SpuSaleAttr> getSpuSaleAttrListCheckBySku(@PathVariable("spuId") Long spuId, @PathVariable("skuId")Long skuId){
+        List<SpuSaleAttr> spuSaleAttrList=  supInfoService.getSpuSaleAttrListCheckBySku(spuId,skuId);
         return spuSaleAttrList;
     }
     /***
@@ -79,5 +93,17 @@ public class ProductAplController {
      public  BaseCategoryView getCategoryViewByCategory3Id(@PathVariable("category3Id")Long category3Id){
         BaseCategoryView baseCategoryView= baseCategoryService.getCategoryViewByCategory3Id(category3Id);
         return baseCategoryView;
+    }
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/4 15:03
+     * @description 我们前端需要一个销售属性与skuId的map集合 并且是通过spuId查询出来的（"sale_attr_value_id|sale_attr_value_id",skuId）
+     * @param spuId
+     * @return java.util.Map<java.lang.String, java.lang.Long>
+     **/
+    @RequestMapping("getValueIdsMap/{spuId}")
+   public Map<String, Long> getValueIdsMap(@PathVariable("spuId")Long spuId){
+        Map<String, Long> idsMap= supInfoService.getValueIdsMap(spuId);
+        return idsMap;
     }
 }

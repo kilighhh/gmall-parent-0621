@@ -39,7 +39,7 @@ public class BaseAttrInfoApiController {
     /***
      * @author Kilig Zong
      * @date 2020/11/28 19:50
-     * @description 根据平台属性值来获取具体的属性
+     * @description 根据平台属性id来获取平台属性值
      * @param attrId
      * @return com.atguigu.gamll.common.result.Result
      **/

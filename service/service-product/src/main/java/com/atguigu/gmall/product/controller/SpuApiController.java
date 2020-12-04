@@ -30,7 +30,7 @@ public class SpuApiController {
     /***
      * @author Kilig Zong
      * @date 2020/11/30 11:14
-     * @description 注意这里需要返回的是一个Page
+     * @description 注意这里需要返回的是一个Page 分页查询
      * @param pageNo
      * @param pageSize
      * @param category3Id

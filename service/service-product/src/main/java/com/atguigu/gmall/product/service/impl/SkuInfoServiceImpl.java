@@ -1,5 +1,6 @@
 package com.atguigu.gmall.product.service.impl;
 
+import com.atguigu.gamll.common.constant.RedisConst;
 import com.atguigu.gmall.model.product.SkuAttrValue;
 import com.atguigu.gmall.model.product.SkuImage;
 import com.atguigu.gmall.model.product.SkuInfo;
@@ -13,6 +14,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -33,6 +35,9 @@ public class SkuInfoServiceImpl implements SkuInfoService {
     private SkuSaleAttrValueMapper skuSaleAttrValueMapper;
     @Autowired
     private SkuAttrValueMapper skuAttrValueMapper;
+    //注入redisTemplate
+    @Autowired
+    private RedisTemplate redisTemplate;
 
 
     /***
@@ -159,11 +164,37 @@ public class SkuInfoServiceImpl implements SkuInfoService {
      * @author Kilig Zong
      * @date 2020/12/2 19:04
      * @description 查询skuinfo的具体数据也要查查询它的图片集合set进这个skuinfo里面
+     * 在这里我们先查询redis如果redis没有数据则查询数据库,这里需要做防护做防止被缓存穿透的操作
      * @param skuId
      * @return com.atguigu.gmall.model.product.SkuInfo
      **/
     @Override
     public SkuInfo getSkuInfoById(Long skuId) {
+        SkuInfo skuInfo = null;
+        //访问nosql->redis 先查看nosql是否有这条数据
+        //测试查询速度
+        long start = System.currentTimeMillis();
+        skuInfo  = (SkuInfo)redisTemplate.opsForValue().get(RedisConst.SKUKEY_PREFIX + skuId + RedisConst.SKUKEY_SUFFIX);
+        if(null==skuInfo){
+            //访问数据库
+            skuInfo = getSkuInfoByIdFromDb(skuId);
+            //往redis存入数据
+            redisTemplate.opsForValue().set(RedisConst.SKUKEY_PREFIX + skuId + RedisConst.SKUKEY_SUFFIX,skuInfo);
+        }
+        long end = System.currentTimeMillis();
+     long count= end-start;
+        System.out.println("共花了"+count+"毫秒");
+        return skuInfo;
+    }
+
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/2 19:04
+     * @description 查询skuinfo的具体数据也要查查询它的图片集合set进这个skuinfo里面
+     * @param skuId
+     * @return com.atguigu.gmall.model.product.SkuInfo
+     **/
+    private SkuInfo getSkuInfoByIdFromDb(Long skuId) {
         SkuInfo skuInfo = skuInfoMapper.selectById(skuId);
         //查询它携带的图片url集合
         QueryWrapper<SkuImage> wrapper = new QueryWrapper<>();

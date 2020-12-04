@@ -6,6 +6,7 @@ import com.atguigu.gmall.model.product.SpuSaleAttr;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author Kilig Zong
@@ -20,4 +21,8 @@ public interface SupInfoService {
     List<SpuImage> spuImageList(Long spuId);
 
     List<SpuSaleAttr> spuSaleAttrList(Long spuId);
+
+    List<SpuSaleAttr> getSpuSaleAttrListCheckBySku(Long spuId, Long skuId);
+
+    Map<String, Long> getValueIdsMap(Long spuId);
 }

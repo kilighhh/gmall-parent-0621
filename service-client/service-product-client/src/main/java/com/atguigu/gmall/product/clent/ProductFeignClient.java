@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author Kilig Zong
@@ -25,4 +26,8 @@ public interface ProductFeignClient {
     List<SpuSaleAttr> getSpuSaleAttrBySpuId(@PathVariable("spuId")Long spuId);
     @RequestMapping("api/product/getCategoryViewByCategory3Id/{category3Id}")
     BaseCategoryView getCategoryViewByCategory3Id( @PathVariable("category3Id")Long category3Id);
+    @RequestMapping("api/product/getSpuSaleAttrListCheckBySku/{spuId}/{skuId}")
+    List<SpuSaleAttr> getSpuSaleAttrListCheckBySku(@PathVariable("spuId")Long spuId, @PathVariable("skuId")Long skuId);
+    @RequestMapping("api/product/getValueIdsMap/{spuId}")
+    Map<String, Long> getValueIdsMap(@PathVariable("spuId")Long spuId);
 }
