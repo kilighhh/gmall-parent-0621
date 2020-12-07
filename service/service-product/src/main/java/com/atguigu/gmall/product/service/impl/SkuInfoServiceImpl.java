@@ -1,6 +1,6 @@
 package com.atguigu.gmall.product.service.impl;
 
-import com.atguigu.gamll.common.constant.RedisConst;
+import com.atguigu.gmall.common.constant.RedisConst;
 import com.atguigu.gmall.model.product.SkuAttrValue;
 import com.atguigu.gmall.model.product.SkuImage;
 import com.atguigu.gmall.model.product.SkuInfo;
@@ -10,6 +10,7 @@ import com.atguigu.gmall.product.mapper.SkuImageMapper;
 import com.atguigu.gmall.product.mapper.SkuInfoMapper;
 import com.atguigu.gmall.product.mapper.SkuSaleAttrValueMapper;
 import com.atguigu.gmall.product.service.SkuInfoService;
+import com.atguigu.gmall.service.config.GmallCache;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -19,6 +20,8 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Author Kilig Zong
@@ -168,22 +171,71 @@ public class SkuInfoServiceImpl implements SkuInfoService {
      * @param skuId
      * @return com.atguigu.gmall.model.product.SkuInfo
      **/
+    @GmallCache
     @Override
     public SkuInfo getSkuInfoById(Long skuId) {
+        SkuInfo skuInfoByDbOrRedis = getSkuInfoByIdFromDb(skuId);
+        return skuInfoByDbOrRedis;
+    }
+
+    //现在沦为备用方法，不直接访问
+    private SkuInfo getSkuInfoBak(Long skuId) {
         SkuInfo skuInfo = null;
         //访问nosql->redis 先查看nosql是否有这条数据
         //测试查询速度
-        long start = System.currentTimeMillis();
+        //long start = System.currentTimeMillis();
         skuInfo  = (SkuInfo)redisTemplate.opsForValue().get(RedisConst.SKUKEY_PREFIX + skuId + RedisConst.SKUKEY_SUFFIX);
         if(null==skuInfo){
-            //访问数据库
-            skuInfo = getSkuInfoByIdFromDb(skuId);
-            //往redis存入数据
-            redisTemplate.opsForValue().set(RedisConst.SKUKEY_PREFIX + skuId + RedisConst.SKUKEY_SUFFIX,skuInfo);
+            //未拿到缓存，申请分布式锁
+            System.out.println("未拿到缓存，申请分布式锁");
+            //分布式锁，需要定义一个独一无二的锁
+            String key = UUID.randomUUID().toString();
+            //申请分布式锁是否成功
+            Boolean ok = redisTemplate.opsForValue().setIfAbsent(RedisConst.SKUKEY_PREFIX + skuId + RedisConst.SKUKEY_SUFFIX, key, 2, TimeUnit.SECONDS);
+            if(ok){
+                System.out.println("成功申请到分布式锁");
+                //访问数据库
+                skuInfo = getSkuInfoByIdFromDb(skuId);
+                //同步缓存
+                if(null!=skuInfo){
+                    //往redis存入数据 同步缓存
+                    redisTemplate.opsForValue().set(RedisConst.SKUKEY_PREFIX + skuId + RedisConst.SKUKEY_SUFFIX,skuInfo);
+                    //释放锁 其实我们这个openkey就是存入redis的key 如果相等才释放锁，否则可能会释放别人的锁
+                    String opKey =(String)redisTemplate.opsForValue().get(RedisConst.SKUKEY_PREFIX + skuId + RedisConst.SKUKEY_SUFFIX);
+                    if(opKey.equals(key)){
+                        redisTemplate.delete(RedisConst.SKUKEY_PREFIX + skuId + RedisConst.SKUKEY_SUFFIX);
+                    }
+                    // 解锁：使用lua 脚本解锁
+                    // String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
+                    // // 设置lua脚本返回的数据类型
+                    // DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>();
+                    // // 设置lua脚本返回类型为Long
+                    // redisScript.setResultType(Long.class);
+                    // redisScript.setScriptText(script);
+                    // // 删除key 所对应的 value
+                    // redisTemplate.execute(redisScript, Arrays.asList("sku:" + skuId + ":lock"),key);
+
+                }else {
+                    //如果数据库依旧没有这条数据，我们需要同步一条虚假数据，防止恶意攻击
+                    // 同步空缓存
+                    redisTemplate.opsForValue().set(RedisConst.SKUKEY_PREFIX + skuId + RedisConst.SKUKEY_SUFFIX, skuInfo,5,TimeUnit.SECONDS);
+                }
+                System.out.println("归还了分布式锁");
+                //没有拿到锁的话开始自旋
+            }else {
+                System.out.println("未拿到分布式锁，开始自旋");
+                try {//先睡眠等待
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                //开始自旋
+                return getSkuInfoById(skuId);
+            }
         }
-        long end = System.currentTimeMillis();
-     long count= end-start;
-        System.out.println("共花了"+count+"毫秒");
+        //long end = System.currentTimeMillis();
+        // long count= end-start;
+        //System.out.println("共花了"+count+"毫秒");
         return skuInfo;
     }
 

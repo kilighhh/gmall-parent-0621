@@ -1,8 +1,12 @@
 package com.atguigu.gmall.test.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @Author Kilig Zong
@@ -12,9 +16,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("api/test/")
 @RestController
 public class TestController {
+    // 缓存 ID 集合
+    private Map<String, Integer> reqCache = new HashMap<>();
 
-    @GetMapping("test")
-    public String test(){
+    @GetMapping("test/{id}")
+    public String test(@PathVariable Integer id){
+
         return "hello,world";
     }
 }

@@ -1,16 +1,12 @@
 package com.atguigu.gmall.product.controller;
 
-import com.atguigu.gamll.common.result.Result;
-import com.atguigu.gmall.model.product.SpuImage;
-import com.atguigu.gmall.model.product.SpuInfo;
-import com.atguigu.gmall.product.service.SupInfoService;
+import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.product.test.TestFdfs;
 import lombok.SneakyThrows;
 import org.csource.fastdfs.ClientGlobal;
 import org.csource.fastdfs.StorageClient;
 import org.csource.fastdfs.TrackerClient;
 import org.csource.fastdfs.TrackerServer;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
