@@ -1,5 +1,6 @@
 package com.atguigu.gmall.product.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.atguigu.gmall.model.product.BaseCategoryView;
 import com.atguigu.gmall.model.product.SkuInfo;
 import com.atguigu.gmall.model.product.SpuInfo;
@@ -105,5 +106,17 @@ public class ProductAplController {
    public Map<String, Long> getValueIdsMap(@PathVariable("spuId")Long spuId){
         Map<String, Long> idsMap= supInfoService.getValueIdsMap(spuId);
         return idsMap;
+    }
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/7 18:01
+     * @description 获取首页页面一二三级分类数据
+     * @param
+     * @return java.util.List<com.alibaba.fastjson.JSONObject>
+     **/
+    @RequestMapping("getBaseCategoryList")
+   public List<JSONObject> getBaseCategoryList(){
+        List<JSONObject> list=  baseCategoryService.getBaseCategoryList();
+        return list;
     }
 }

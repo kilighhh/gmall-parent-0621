@@ -32,17 +32,8 @@ public class ItemController {
         model.addAllAttributes(map);
         return "item/index";
     }
-//    @RequestMapping("/")
-//    public String index(){
-//
-//        return "index";
-//    }
-
-
-
     @RequestMapping("test")
     public String test(Model model){
-
         model.addAttribute("hello","hello thymeleaf");
         List<String> list = new ArrayList<>();
         for (int i = 0; i < 5; i++) {

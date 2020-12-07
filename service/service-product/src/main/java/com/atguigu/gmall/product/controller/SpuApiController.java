@@ -1,13 +1,12 @@
 package com.atguigu.gmall.product.controller;
 
-import com.atguigu.gamll.common.result.Result;
+import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.model.product.BaseSaleAttr;
 import com.atguigu.gmall.model.product.SpuInfo;
 import com.atguigu.gmall.product.service.BaseAttrService;
 
 import com.atguigu.gmall.product.service.SupInfoService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

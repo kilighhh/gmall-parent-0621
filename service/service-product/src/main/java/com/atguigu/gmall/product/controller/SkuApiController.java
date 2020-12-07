@@ -1,9 +1,8 @@
 package com.atguigu.gmall.product.controller;
 
-import com.atguigu.gamll.common.result.Result;
+import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.model.product.SkuInfo;
 import com.atguigu.gmall.model.product.SpuImage;
-import com.atguigu.gmall.model.product.SpuInfo;
 import com.atguigu.gmall.model.product.SpuSaleAttr;
 import com.atguigu.gmall.product.service.SkuInfoService;
 import com.atguigu.gmall.product.service.SupInfoService;
