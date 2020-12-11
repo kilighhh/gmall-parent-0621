@@ -19,6 +19,7 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
@@ -38,10 +39,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -291,28 +289,67 @@ public class ListServiceImpl implements ListService {
                 list.add(goods);
             }
             searchResponseVo.setGoodsList(list);
-            //以下设置商标聚合的信息
-            ParsedLongTerms tmIdAgg = (ParsedLongTerms) searchResponse.getAggregations().get("tmIdAgg");
-            //这里是利用流式编程
-            List<SearchResponseTmVo> searchResponseTmVos= tmIdAgg.getBuckets().stream().map(tmIdAggBucket->{
-                SearchResponseTmVo searchResponseTmVo = new SearchResponseTmVo();
-                //获取品牌的id
-                long tmId =  tmIdAggBucket.getKeyAsNumber().longValue();
-                //获取品牌的名字
-                ParsedStringTerms tmNameAgg=(ParsedStringTerms)tmIdAggBucket.getAggregations().get("tmNameAgg");
-                String tmName = tmNameAgg.getBuckets().get(0).getKeyAsString();
-                //获取品牌的LogoUrl地址
-                ParsedStringTerms tmLogoUrlAgg=(ParsedStringTerms)tmIdAggBucket.getAggregations().get("tmLogoUrlAgg");
-                String tmLogoUrl = tmLogoUrlAgg.getBuckets().get(0).getKeyAsString();
-                //将我们查询的品牌聚合的名字set进去
-                searchResponseTmVo.setTmLogoUrl(tmLogoUrl);
-                searchResponseTmVo.setTmName(tmName);
-                searchResponseTmVo.setTmId(tmId);
-                return searchResponseTmVo;
-            }).collect(Collectors.toList());
+            //下面是流式编程 将他抽取成一个方法
+            //List<SearchResponseTmVo> searchResponseTmVos = getSearchResponseStreamTmVos(searchResponse);
+            //下面不是流式编程 就是利用goods get出我们的品牌信息 然后返回一个list
+            List<SearchResponseTmVo> searchResponseTmVos =getSearchResponseSetTmVos(list);
+            //下面不是流式编程，将品牌信息抽取出来
+            //List<SearchResponseTmVo> searchResponseTmVos =getSearchResponseTmVoS(searchResponse);
             searchResponseVo.setTrademarkList(searchResponseTmVos);
         }
         return searchResponseVo;
+    }
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/11 20:20
+     * @description 最简单的获取品牌信息的方法
+     * @param list
+     * @return java.util.List<com.atguigu.gmall.model.list.SearchResponseTmVo>
+     **/
+    private List<SearchResponseTmVo> getSearchResponseSetTmVos(List<Goods> list){
+        //创建一个set
+        Set<SearchResponseTmVo> hashSet = new HashSet<>();
+        //循环迭代叠加
+        for (Goods goods : list) {
+            SearchResponseTmVo searchResponseTmVo = new SearchResponseTmVo();
+            searchResponseTmVo.setTmName(goods.getTmName());
+            searchResponseTmVo.setTmLogoUrl(goods.getTmLogoUrl());
+            searchResponseTmVo.setTmId(goods.getTmId());
+            hashSet.add(searchResponseTmVo);
+        }
+        //利用流式编程返回
+        List<SearchResponseTmVo> searchResponseTmVos= hashSet.stream().collect(Collectors.toList());
+        return  searchResponseTmVos;
+    }
+
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/11 18:46
+     * @description 利用流式编程查询商标聚合信息
+     * @param searchResponse
+     * @return java.util.List<com.atguigu.gmall.model.list.SearchResponseTmVo>
+     **/
+    private List<SearchResponseTmVo> getSearchResponseStreamTmVos(SearchResponse searchResponse) {
+        //以下设置商标聚合的信息
+        ParsedLongTerms tmIdAgg = (ParsedLongTerms) searchResponse.getAggregations().get("tmIdAgg");
+        //这里是利用流式编程
+        List<SearchResponseTmVo> searchResponseTmVos= tmIdAgg.getBuckets().stream().map(tmIdAggBucket->{
+            SearchResponseTmVo searchResponseTmVo = new SearchResponseTmVo();
+            //获取品牌的id
+            long tmId =  tmIdAggBucket.getKeyAsNumber().longValue();
+            //获取品牌的名字
+            ParsedStringTerms tmNameAgg=(ParsedStringTerms)tmIdAggBucket.getAggregations().get("tmNameAgg");
+            String tmName = tmNameAgg.getBuckets().get(0).getKeyAsString();
+            //获取品牌的LogoUrl地址
+            ParsedStringTerms tmLogoUrlAgg=(ParsedStringTerms)tmIdAggBucket.getAggregations().get("tmLogoUrlAgg");
+            String tmLogoUrl = tmLogoUrlAgg.getBuckets().get(0).getKeyAsString();
+            //将我们查询的品牌聚合的名字set进去
+            searchResponseTmVo.setTmLogoUrl(tmLogoUrl);
+            searchResponseTmVo.setTmName(tmName);
+            searchResponseTmVo.setTmId(tmId);
+            return searchResponseTmVo;
+        }).collect(Collectors.toList());
+        return searchResponseTmVos;
     }
 
 }
