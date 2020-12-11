@@ -1,9 +1,11 @@
 package com.atguigu.gmall.product.service;
 
+import com.atguigu.gmall.model.list.SearchAttr;
 import com.atguigu.gmall.model.product.SkuInfo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * @Author Kilig Zong
@@ -22,4 +24,7 @@ public interface SkuInfoService {
     BigDecimal getPrice(Long skuId);
 
     SkuInfo getSkuInfoById(Long skuId);
+
+
+    List<SearchAttr> getSearchAttrList(Long skuInfoId);
 }

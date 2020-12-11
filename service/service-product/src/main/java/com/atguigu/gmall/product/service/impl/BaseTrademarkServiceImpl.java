@@ -31,4 +31,17 @@ public class BaseTrademarkServiceImpl implements BaseTrademarkService {
         List<BaseTrademark> trademarks = trademarkMapper.selectList(wrapper);
         return trademarks;
     }
+
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/9 18:09
+     * @description 根据id来查询品牌
+     * @param tmId
+     * @return com.atguigu.gmall.model.product.BaseTrademark
+     **/
+    @Override
+    public BaseTrademark getTradeMarkById(Long tmId) {
+        BaseTrademark baseTrademark = trademarkMapper.selectById(tmId);
+        return baseTrademark;
+    }
 }
