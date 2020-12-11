@@ -1,6 +1,8 @@
 package com.atguigu.gmall.product.service.impl;
 
 import com.atguigu.gmall.common.constant.RedisConst;
+import com.atguigu.gmall.list.client.ListFeignClient;
+import com.atguigu.gmall.model.list.SearchAttr;
 import com.atguigu.gmall.model.product.SkuAttrValue;
 import com.atguigu.gmall.model.product.SkuImage;
 import com.atguigu.gmall.model.product.SkuInfo;
@@ -41,6 +43,9 @@ public class SkuInfoServiceImpl implements SkuInfoService {
     //注入redisTemplate
     @Autowired
     private RedisTemplate redisTemplate;
+    //注入feign
+    @Autowired
+    private ListFeignClient listFeignClient;
 
 
     /***
@@ -118,8 +123,9 @@ public class SkuInfoServiceImpl implements SkuInfoService {
         skuInfo.setId(skuInfoId);
         skuInfo.setIsSale(0);
         int i = skuInfoMapper.updateById(skuInfo);
-        // 清理nosql
+        // 清理nosql 商品下架利用es
         System.out.println("同步搜索引擎");
+        listFeignClient.cancelSale(skuInfoId);
         if(i<=0){
             return false;
         }else {
@@ -142,6 +148,8 @@ public class SkuInfoServiceImpl implements SkuInfoService {
         int i = skuInfoMapper.updateById(skuInfo);
         // 清理nosql
         System.out.println("同步搜索引擎");
+        //商品上架 利用es
+        listFeignClient.onSale(skuInfoId);
         if(i<=0){
             return false;
         }else {
@@ -176,6 +184,19 @@ public class SkuInfoServiceImpl implements SkuInfoService {
     public SkuInfo getSkuInfoById(Long skuId) {
         SkuInfo skuInfoByDbOrRedis = getSkuInfoByIdFromDb(skuId);
         return skuInfoByDbOrRedis;
+    }
+
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/9 18:12
+     * @description 根据skuInfoId来查询平台销售属性值
+     * @param skuInfoId
+     * @return java.util.List<com.atguigu.gmall.model.list.SearchAttr>
+     **/
+    @Override
+    public List<SearchAttr> getSearchAttrList(Long skuInfoId) {
+        List<SearchAttr> searchAttrs = skuSaleAttrValueMapper.selectSearchAttrList(skuInfoId);
+        return searchAttrs;
     }
 
     //现在沦为备用方法，不直接访问

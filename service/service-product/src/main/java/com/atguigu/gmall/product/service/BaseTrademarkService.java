@@ -11,4 +11,6 @@ import java.util.List;
  */
 public interface BaseTrademarkService {
     List<BaseTrademark> getTrademarkList();
+
+    BaseTrademark getTradeMarkById(Long tmId);
 }

@@ -1,11 +1,10 @@
 package com.atguigu.gmall.product.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.atguigu.gmall.model.product.BaseCategoryView;
-import com.atguigu.gmall.model.product.SkuInfo;
-import com.atguigu.gmall.model.product.SpuInfo;
-import com.atguigu.gmall.model.product.SpuSaleAttr;
+import com.atguigu.gmall.model.list.SearchAttr;
+import com.atguigu.gmall.model.product.*;
 import com.atguigu.gmall.product.service.BaseCategoryService;
+import com.atguigu.gmall.product.service.BaseTrademarkService;
 import com.atguigu.gmall.product.service.SkuInfoService;
 import com.atguigu.gmall.product.service.SupInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +33,8 @@ public class ProductAplController {
     private SupInfoService supInfoService;
     @Autowired
     private BaseCategoryService baseCategoryService;
+    @Autowired
+    private BaseTrademarkService baseTrademarkService;
     /***
      * @author Kilig Zong
      * @date 2020/12/2 19:01
@@ -118,5 +119,29 @@ public class ProductAplController {
    public List<JSONObject> getBaseCategoryList(){
         List<JSONObject> list=  baseCategoryService.getBaseCategoryList();
         return list;
+    }
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/9 18:06
+     * @description 根据skuInfoId来查询平台属性id以及平台属性值
+     * @param skuInfoId
+     * @return java.util.List<com.atguigu.gmall.model.list.SearchAttr>
+     **/
+    @RequestMapping("getSearchAttrList/{skuInfoId}")
+   public List<SearchAttr> getSearchAttrList(@PathVariable("skuInfoId")Long skuInfoId){
+        List<SearchAttr> searchAttrs=skuInfoService.getSearchAttrList(skuInfoId);
+        return searchAttrs;
+    }
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/9 18:07
+     * @description 根据查询平台名
+     * @param tmId
+     * @return com.atguigu.gmall.model.product.BaseTrademark
+     **/
+    @RequestMapping("getTradeMark/{tmId}")
+    public  BaseTrademark getTradeMark(@PathVariable("tmId") Long tmId){
+      BaseTrademark baseTrademark=baseTrademarkService.getTradeMarkById(tmId);
+      return baseTrademark;
     }
 }
