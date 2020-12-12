@@ -31,4 +31,6 @@ public interface ListFeignClient {
     void onSale(@PathVariable("skuInfoId") Long skuInfoId);
     @RequestMapping("api/list/list")
     SearchResponseVo list(@RequestBody SearchParam searchParam);
+    @RequestMapping("api/list/hotScore/{skuId}")
+    void hotScore(@PathVariable("skuId") Long skuId);
 }

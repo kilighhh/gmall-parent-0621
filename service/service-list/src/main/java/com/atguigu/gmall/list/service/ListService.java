@@ -22,4 +22,6 @@ public interface ListService {
     void createGoodsIndex();
 
     SearchResponseVo list(SearchParam searchParam);
+
+    void hotScore(Long skuId);
 }

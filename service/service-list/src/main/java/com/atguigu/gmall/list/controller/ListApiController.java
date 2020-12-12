@@ -83,4 +83,15 @@ public class ListApiController {
         SearchResponseVo searchResponseVo= listService.list(searchParam);
         return searchResponseVo;
     }
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/12 19:45
+     * @description 给查看的视频详情增加热度值
+     * @param skuId
+     * @return void
+     **/
+    @RequestMapping("hotScore/{skuId}")
+   public void hotScore(@PathVariable("skuId") Long skuId){
+        listService.hotScore(skuId);
+    }
 }

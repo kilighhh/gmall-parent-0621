@@ -11,29 +11,37 @@ import com.alibaba.fastjson.JSONObject;
 import com.atguigu.gmall.list.service.ListService;
 import org.apache.commons.lang.time.DateUtils;
 
+import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.TermQueryBuilder;
+import org.elasticsearch.common.text.Text;
+import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.nested.NestedAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.nested.ParsedNested;
 import org.elasticsearch.search.aggregations.bucket.terms.ParsedLongTerms;
 import org.elasticsearch.search.aggregations.bucket.terms.ParsedStringTerms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -57,6 +65,8 @@ public class ListServiceImpl implements ListService {
     private ElasticsearchRestTemplate restTemplate;
     @Autowired
     private RestHighLevelClient restHighLevelClient;
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     /***
      * @author Kilig Zong
@@ -194,6 +204,35 @@ public class ListServiceImpl implements ListService {
 
     /***
      * @author Kilig Zong
+     * @date 2020/12/12 19:48
+     * @description 给我们的搜索的sku增加热度值
+     * @param skuId
+     * @return void
+     **/
+    @Override
+    public void hotScore(Long skuId) {
+        //先查询原本的热度值
+        Integer hotScore = (Integer)redisTemplate.opsForValue().get("hotScore:" + skuId);
+        //判断非空
+        if(hotScore!=null){
+            hotScore++;
+            redisTemplate.opsForValue().set(("hotScore:" + skuId),hotScore);
+        }else {
+            redisTemplate.opsForValue().set(("hotScore:" + skuId),1);
+            hotScore=(Integer)redisTemplate.opsForValue().get("hotScore:" + skuId);
+        }
+        //如果热度值破10的话就往es搜索引擎里面设置
+        if(hotScore%10==0){
+            Optional<Goods> goodsOptional = goodsElasticsearchRepository.findById(skuId);
+            //获得goods然后将热度值更新进去
+            Goods goods = goodsOptional.get();
+            goods.setHotScore(Long.parseLong(hotScore+""));
+            goodsElasticsearchRepository.save(goods);
+        }
+    }
+
+    /***
+     * @author Kilig Zong
      * @date 2020/12/11 17:04
      * @description 将结果集中的品牌信息解析然后封装
      * @param searchResponse
@@ -243,21 +282,90 @@ public class ListServiceImpl implements ListService {
         searchRequest.indices("goods");
         searchRequest.types("info");
         //如果有参数的话，就把参数set进去
+        //将前端可能会点击的平台属性都get出来
+        //三级分类的id
+        Long category3Id = searchParam.getCategory3Id();
+        String keyword = searchParam.getKeyword();
+        String[] props = searchParam.getProps(); // 属性id:属性值名称:属性名称
+        String trademark = searchParam.getTrademark();// 商标id:商标名称
+        String order = searchParam.getOrder();//排序规则
+        //根据点击的属性来搜索条件 bool是代表着多条件查询
+        BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+        //判断非空 然后查询 因为是nested查询所以 这里是面包屑导航检索
+        if(null!=props&&props.length>0){
+            for (String prop : props) {
+                String[] split = prop.split(":");
+               Long attrId = Long.parseLong(split[0]);
+                String attrName = split[2];
+                String attrValueName = split[1];
+                BoolQueryBuilder boolQueryBuilderNested = new BoolQueryBuilder();
+                TermQueryBuilder attrIdQueryBuilder = new TermQueryBuilder("attrs.attrId",attrId);
+                MatchQueryBuilder attrValueNameMatchQueryBuilder = new MatchQueryBuilder("attrs.attrValue",attrValueName);
+                boolQueryBuilderNested.filter(attrIdQueryBuilder);
+                boolQueryBuilderNested.must(attrValueNameMatchQueryBuilder);
+                NestedQueryBuilder nestedQueryBuilder = new NestedQueryBuilder("attrs",boolQueryBuilderNested, ScoreMode.None);
+                boolQueryBuilder.filter(nestedQueryBuilder);
+
+            }
+        }
         //es的查询的api是source，他所需要的参数是searchSourceBuilder，所以我们需要自己创建
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        //这里需要查询的语句的所需要的条件，这里是条件查询
-        Long category3Id = searchParam.getCategory3Id();
+        //这里需要查询的语句的所需要的条件，这里是条件查询 三级分类
         if(null!=category3Id&&category3Id>0){
             TermQueryBuilder termQueryBuilder = new TermQueryBuilder("category3Id",category3Id);
-            //嵌套查询要根据原生的sql
-            searchSourceBuilder.query(termQueryBuilder);
+            boolQueryBuilder.filter(termQueryBuilder);
         }
+        //根据品牌查询
+        if(!StringUtils.isEmpty(trademark)){
+            TermQueryBuilder termQueryBuilder = new TermQueryBuilder("tmId",trademark.split(":")[0]);
+            boolQueryBuilder.filter(termQueryBuilder);
+        }
+        //关键字检索
+        if(!StringUtils.isEmpty(keyword)){
+            MatchQueryBuilder matchQueryBuilder = new MatchQueryBuilder("title",keyword);
+            boolQueryBuilder.must(matchQueryBuilder);
+        }
+        // 页面size
+        searchSourceBuilder.size(20);
+        searchSourceBuilder.from(0);
+        //页面排序规则
+        if(!StringUtils.isEmpty(order)){
+            //排序类型 1是综合排序 2是价格排序
+            String type = order.split(":")[0];
+            //排序方式
+            String sort=  order.split(":")[1];
+            //综合排序就是靠热度排序
+            if(type.equals("1")){
+                String sortName="hotScore";
+                searchSourceBuilder.sort(sortName, sort.equals("asc")?SortOrder.ASC:SortOrder.DESC);
+            }
+            //等于2的话就是按照价格排序
+            if(type.equals("2")){
+                String sortName="price";
+                searchSourceBuilder.sort(sortName, sort.equals("asc")?SortOrder.ASC:SortOrder.DESC);
+            }
+        }
+        //关键字高亮
+        HighlightBuilder highlightBuilder = new HighlightBuilder();
+        highlightBuilder.preTags("<span style='color:red;font-weight:bolder'>");
+        highlightBuilder.field("title");
+        highlightBuilder.postTags("</span>");
+        searchSourceBuilder.highlighter(highlightBuilder);
+        //嵌套查询要根据原生的sql
+        searchSourceBuilder.query(boolQueryBuilder);
         //下列是分组聚合查询,要查询品牌的名字，id 还有logo图片 subAggregation代表子聚合查询
-        TermsAggregationBuilder aggregationBuilder = AggregationBuilders.terms("tmIdAgg").field("tmId")
+        TermsAggregationBuilder termsTmAggregationBuilder = AggregationBuilders.terms("tmIdAgg").field("tmId")
                         .subAggregation(AggregationBuilders.terms("tmNameAgg").field("tmName"))
                         .subAggregation(AggregationBuilders.terms("tmLogoUrlAgg").field("tmLogoUrl"));
         //聚合查询所需要的Builder查询api
-        searchSourceBuilder.aggregation(aggregationBuilder);
+        searchSourceBuilder.aggregation(termsTmAggregationBuilder);
+        //下列也是分组聚合查询
+        NestedAggregationBuilder nestedAggregationBuilder =AggregationBuilders.nested("attrsAgg","attrs").subAggregation(
+                AggregationBuilders.terms("attrIdAgg").field("attrs.attrId")
+                        .subAggregation(AggregationBuilders.terms("attrNameAgg").field("attrs.attrName"))
+                        .subAggregation(AggregationBuilders.terms("attrValueAgg").field("attrs.attrValue")));
+        //聚合查询所需要的Builder查询api
+        searchSourceBuilder.aggregation(nestedAggregationBuilder);
         //最初所需要的搜索 或者说根据三级分类id来进行查询
         searchRequest.source(searchSourceBuilder);
         System.out.println(searchRequest);
@@ -280,25 +388,77 @@ public class ListServiceImpl implements ListService {
         if (null!=hitsResult&&hitsResult.length>0){
             //创建我们vo当中的goods的集合
             List<Goods> list = new ArrayList<>();
-            for (SearchHit hit : hitsResult) {
+            for (SearchHit document : hitsResult) {
                 //这里我们会得到一条json数据
-                String sourceAsString = hit.getSourceAsString();
+                String sourceAsString = document.getSourceAsString();
                 //这里我们需要将json数据转化成我们需要的vo
                 Goods goods = JSON.parseObject(sourceAsString, Goods.class);
+                //在这里将我们的字转成我们的待效果的关键字 就是高亮字的替换
+                Map<String, HighlightField> highlightFields = document.getHighlightFields();
+                if(null!=highlightFields&&highlightFields.size()>0){
+                    HighlightField title = highlightFields.get("title");
+                    if(null!=title){
+                        Text fragment = title.getFragments()[0];
+                        String titleHigh = fragment.toString();
+                        goods.setTitle(titleHigh);
+                    }
+                }
+
                 //把我们的goods放进集合里面
                 list.add(goods);
             }
             searchResponseVo.setGoodsList(list);
-            //下面是流式编程 将他抽取成一个方法
+            //下面是流式编程 获取品牌信息 将他抽取成一个方法
             //List<SearchResponseTmVo> searchResponseTmVos = getSearchResponseStreamTmVos(searchResponse);
             //下面不是流式编程 就是利用goods get出我们的品牌信息 然后返回一个list
             List<SearchResponseTmVo> searchResponseTmVos =getSearchResponseSetTmVos(list);
             //下面不是流式编程，将品牌信息抽取出来
             //List<SearchResponseTmVo> searchResponseTmVos =getSearchResponseTmVoS(searchResponse);
+            //***************************下面是将返回结果中的平台销售属性抽取出来
+            List<SearchResponseAttrVo> searchResponseAttrVos=getSearchResponseAttrVos(searchResponse);
+            //set进vo
+            searchResponseVo.setAttrsList(searchResponseAttrVos);
             searchResponseVo.setTrademarkList(searchResponseTmVos);
         }
         return searchResponseVo;
     }
+
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/12 11:25
+     * @description 将返回结果中的平台销售属性封装这也是聚合查询
+     * @param searchResponse
+     * @return java.util.List<com.atguigu.gmall.model.list.SearchResponseAttrVo>
+     **/
+    private List<SearchResponseAttrVo> getSearchResponseAttrVos(SearchResponse searchResponse) {
+        //这里是两层 所以需要两次获取聚合结果
+        ParsedNested attrsAgg=(ParsedNested)searchResponse.getAggregations().get("attrsAgg");
+      ParsedLongTerms attrIdAgg=(ParsedLongTerms)attrsAgg.getAggregations().get("attrIdAgg");
+        List<SearchResponseAttrVo> searchResponseAttrVos= attrIdAgg.getBuckets().stream().map(attrIdAggBucket->{
+            //先创建一个SearchResponseAttrVo
+            SearchResponseAttrVo searchResponseAttrVo = new SearchResponseAttrVo();
+            //获取平台销售属性的id
+            long attrIdKey = ((Terms.Bucket) attrIdAggBucket).getKeyAsNumber().longValue();
+            //先得到一个聚合结果的集
+            ParsedStringTerms attrNameAgg = (ParsedStringTerms)((Terms.Bucket) attrIdAggBucket).getAggregations().get("attrNameAgg");
+            //获取平台销售属性的名字
+            String attrNameKey = attrNameAgg.getBuckets().get(0).getKeyAsString();
+            //先得到一个聚合结果的集
+            ParsedStringTerms attrValueAgg= ((Terms.Bucket) attrIdAggBucket).getAggregations().get("attrValueAgg");
+           List<String> attrValueS= attrValueAgg.getBuckets().stream().map(attrValueBucket->{
+               String attrValueKey = ((Terms.Bucket) attrValueBucket).getKeyAsString();
+               return attrValueKey;
+           }).collect(Collectors.toList());
+
+            //set进我们的searchResponseAttrVo
+            searchResponseAttrVo.setAttrId(attrIdKey);
+            searchResponseAttrVo.setAttrName(attrNameKey);
+            searchResponseAttrVo.setAttrValueList(attrValueS);
+            return searchResponseAttrVo;
+        }).collect(Collectors.toList());
+        return searchResponseAttrVos;
+    }
+
     /***
      * @author Kilig Zong
      * @date 2020/12/11 20:20
