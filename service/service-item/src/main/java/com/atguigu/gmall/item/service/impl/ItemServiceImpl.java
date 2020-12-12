@@ -2,6 +2,7 @@ package com.atguigu.gmall.item.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.atguigu.gmall.item.service.ItemService;
+import com.atguigu.gmall.list.client.ListFeignClient;
 import com.atguigu.gmall.model.product.BaseCategoryView;
 import com.atguigu.gmall.model.product.SkuInfo;
 import com.atguigu.gmall.model.product.SpuSaleAttr;
@@ -31,6 +32,8 @@ public class ItemServiceImpl implements ItemService {
     private ProductFeignClient productFeignClient;
     @Autowired
     ThreadPoolExecutor threadPoolExecutor;
+    @Autowired
+    ListFeignClient listFeignClient;
     /***
      * @author Kilig Zong
      * @date 2020/12/2 12:27
@@ -40,12 +43,15 @@ public class ItemServiceImpl implements ItemService {
      * image 图片数据
      * spuSaleAttr 销售属性数据
      * 以及分类属性
+     * 给当前的搜索的增加热度
      * @param skuId
      * @return java.util.Map<java.lang.String, java.lang.Object>
      **/
     @Override
     public Map<String, Object> getItem(Long skuId) {
         Map<String, Object> resultMap = getItemByThread(skuId);
+        //   // 为当前skuId的搜索引擎增加热度值
+        listFeignClient.hotScore(skuId);
         return resultMap;
     }
 

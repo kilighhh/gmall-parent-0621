@@ -46,12 +46,12 @@
 	bai.attr_name as attrName,
 	bav.value_name	as attrValue
     FROM
-	sku_sale_attr_value AS sav,
+	sku_attr_value AS sav,
 	base_attr_info AS bai,
 	base_attr_value AS bav
     WHERE
 	bai.id = bav.attr_id
-	AND sav.sale_attr_value_id = bav.id
+	AND sav.value_id = bav.id
 	AND sav.sku_id =#{skuInfoId}
     </select>
 </mapper>
