@@ -1,4 +1,4 @@
-package com.atguigu.gmall.product;
+package com.atguigu.gmall.cart;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,8 +15,8 @@ import org.springframework.context.annotation.ComponentScan;
 @ComponentScan({"com.atguigu.gmall"})
 @EnableDiscoveryClient//让注册中心发现服务
 @EnableFeignClients("com.atguigu.gmall")//开启feign远程调用
-public class ServiceProductApplication {
+public class ServiceCartApplication {
     public static void main(String[] args) {
-        SpringApplication.run(ServiceProductApplication.class,args);
+        SpringApplication.run(ServiceCartApplication.class,args);
     }
 }

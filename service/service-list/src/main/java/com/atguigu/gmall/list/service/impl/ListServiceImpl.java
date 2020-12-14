@@ -427,6 +427,8 @@ public class ListServiceImpl implements ListService {
      * @author Kilig Zong
      * @date 2020/12/12 11:25
      * @description 将返回结果中的平台销售属性封装这也是聚合查询
+     *
+     *
      * @param searchResponse
      * @return java.util.List<com.atguigu.gmall.model.list.SearchResponseAttrVo>
      **/

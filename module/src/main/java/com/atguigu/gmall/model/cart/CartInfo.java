@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 @Data
 @ApiModel(description = "购物车")
@@ -44,5 +45,16 @@ public class CartInfo extends BaseEntity {
     // 实时价格 skuInfo.price 并不是数据库字段，而是业务需要的！
     @TableField(exist = false)
     BigDecimal skuPrice;
-
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/14 14:13
+     * @description 重写hashCode方法是因为我们在缓存的时候需要用
+     * @param
+     * @return int
+     **/
+    @Override
+    public int hashCode() {
+        int i = Integer.parseInt(getUserId() + "");
+        return i;
+}
 }
