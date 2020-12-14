@@ -46,6 +46,10 @@ public class GmallCacheAspect {
         Object[] args = point.getArgs();
         //循环遍历参数设置缓存key 这个key是分布式锁的key
         for (Object arg : args) {
+            if(Object.class.isInstance(arg)){
+                    arg=arg.hashCode();
+                System.out.println("arg = " + arg);
+            }
             cacheKey=cacheKey+":"+arg;
         }
         //注解信息 虽然没什么用
