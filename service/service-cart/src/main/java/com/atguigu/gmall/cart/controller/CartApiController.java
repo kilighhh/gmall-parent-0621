@@ -6,6 +6,7 @@ import com.atguigu.gmall.model.cart.CartInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -13,7 +14,6 @@ import java.util.List;
  * @Date 2020/12/14 12:15
  * @Version 1.0
  */
-@CrossOrigin
 @RestController
 @RequestMapping("api/cart")
 public class CartApiController {
@@ -27,9 +27,9 @@ public class CartApiController {
      * @return void
      **/
     @RequestMapping("addCart")
-   public void addCart(@RequestBody CartInfo cartInfo){
+   public void addCart(@RequestBody CartInfo cartInfo, HttpServletRequest request){
         //这个用户id是得用网关从其他微服务获得
-        String userId="1";
+        String userId=request.getHeader("userId");
         cartInfo.setUserId(userId);
         cartService.addCart(cartInfo);
     }
@@ -42,9 +42,9 @@ public class CartApiController {
      **/
     //http://api.gmall.com:8201/api/cart/cartList
     @RequestMapping("cartList")
-    public Result cartList(){
+    public Result cartList( HttpServletRequest request){
         //这个用户id是得用网关从其他微服务获得
-        String userId="1";
+        String userId=request.getHeader("userId");
         CartInfo cartInfo = new CartInfo();
         cartInfo.setUserId(userId);
         List<CartInfo> cartInfos= cartService.cartList(cartInfo);
@@ -60,14 +60,22 @@ public class CartApiController {
      **/
     //http://api.gmall.com:8201/api/cart/addToCart/1/1
     @RequestMapping("addToCart/{skuId}/{skuNum}")
-        public Result addToCart(@PathVariable("skuId") Long skuId, @PathVariable("skuNum") Integer skuNum){
+        public Result addToCart(@PathVariable("skuId") Long skuId, @PathVariable("skuNum") Integer skuNum,HttpServletRequest request){
         //这个用户id是得用网关从其他微服务获得
-        String userId="1";
+        String userId=request.getHeader("userId");
         //这里我们是需要将用户id 商品skuId还有数量传进数据库修改然后前端再次查询
        cartService.addToCart(skuId,skuNum,userId);
          return Result.ok();
 
     }
+    /**
+     * @author Kilig Zong
+     * @date 2020/12/14 21:21
+     * @description 根据√选择更新我们的数据
+     * @param skuId
+     * @param isChecked
+     * @return com.atguigu.gmall.common.result.Result
+     **/
     //http://api.gmall.com/api/cart/checkCart/1/1
     @RequestMapping("checkCart/{skuId}/{isChecked}")
     public Result checkCart(@PathVariable("skuId") Long skuId,@PathVariable("isChecked") Integer isChecked){

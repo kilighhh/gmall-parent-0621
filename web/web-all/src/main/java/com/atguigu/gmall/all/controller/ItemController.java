@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,8 +27,8 @@ public class ItemController {
     private ItemFeignClient itemFeignClient;
 
     @RequestMapping("{skuId}.html")
-    public String item(@PathVariable ("skuId") Long skuId,Model model){
-
+    public String item(@PathVariable ("skuId") Long skuId, Model model, HttpServletRequest request){
+        String userId=request.getHeader("userId");
         Map<String, Object> map=itemFeignClient.getItem(skuId);
         model.addAllAttributes(map);
         return "item/index";
