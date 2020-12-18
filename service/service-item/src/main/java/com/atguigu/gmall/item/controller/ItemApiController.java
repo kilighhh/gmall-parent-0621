@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,7 +30,8 @@ public class   ItemApiController{
      * @return java.util.Map<java.lang.String, java.lang.Object>
      **/
     @RequestMapping("getItem/{skuId}")
-    public Map<String, Object> getItem(@PathVariable("skuId") Long skuId){
+    public Map<String, Object> getItem(@PathVariable("skuId") Long skuId, HttpServletRequest request){
+        String userId=request.getHeader("userId");
         Map<String, Object> map= itemService.getItem(skuId);
         return map;
     }

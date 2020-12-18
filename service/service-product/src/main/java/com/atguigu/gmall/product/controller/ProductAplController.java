@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +56,8 @@ public class ProductAplController {
      * @return com.atguigu.gmall.model.product.SkuInfo
      **/
     @RequestMapping("getSkuInfoById/{skuId}")
-    public SkuInfo getSkuInfoById(@PathVariable("skuId") Long skuId){
+    public SkuInfo getSkuInfoById(@PathVariable("skuId") Long skuId, HttpServletRequest request){
+        String userId=request.getHeader("userId");
         SkuInfo skuInfo=  skuInfoService.getSkuInfoById(skuId);
         return skuInfo;
     }

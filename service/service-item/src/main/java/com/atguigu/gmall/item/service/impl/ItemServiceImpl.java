@@ -10,6 +10,8 @@ import com.atguigu.gmall.product.clent.ProductFeignClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -66,6 +68,9 @@ public class ItemServiceImpl implements ItemService {
         //方法启动开启时间
         long start = System.currentTimeMillis();
         Map<String, Object> map = new HashMap<>();
+        //开启多线程共享资源
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        RequestContextHolder.setRequestAttributes(attributes, true);
         //开启异步多线程编排，查询skuInfo的详情信息 需要返回信息
         CompletableFuture<SkuInfo> completableFutureSkuInFo = CompletableFuture.supplyAsync(new Supplier<SkuInfo>() {
             @Override
