@@ -15,6 +15,7 @@
         <module>service-util</module>
         <module>web-util</module>
         <module>common-util</module>
+        <module>rabbit-util</module>
     </modules>
 
 

@@ -1,15 +1,22 @@
 package com.atguigu.gmall.user.controller;
 
+import com.atguigu.gmall.common.config.CookieUtils;
 import com.atguigu.gmall.common.result.Result;
+import com.atguigu.gmall.model.user.UserAddress;
 import com.atguigu.gmall.model.user.UserInfo;
 import com.atguigu.gmall.user.service.UserService;
+import org.apache.http.HttpResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -53,5 +60,31 @@ public class UserApiController{
         }else {
             return Result.ok(userInfo);
         }
+    }
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/18 14:18
+     * @description 根据用户i查询我们的用户的地址
+     * @param userId
+     * @return java.util.List<com.atguigu.gmall.model.user.UserAddress>
+     **/
+    @RequestMapping("findUserAddressListByUserId/{userId}")
+    public List<UserAddress> findUserAddressListByUserId(@PathVariable("userId")String userId){
+      List<UserAddress> addresses=userService.findUserAddressListByUserId(userId);
+      return addresses;
+
+    }
+
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/18 14:20
+     * @description 退出用户登录
+     * @param request
+     * @return void
+     **/
+    @RequestMapping("logout")
+    public void logout(HttpServletRequest request, HttpServletResponse response){
+        CookieUtils.deleteCookie(request,response,"token");
+        CookieUtils.deleteCookie(request,response,"userInfo");
     }
 }

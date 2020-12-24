@@ -60,7 +60,7 @@ public class CartServiceImpl implements CartService {
             cartInfo.setImgUrl(skuInfo.getSkuDefaultImg());
             cartInfo.setIsChecked(1);
             cartInfo.setSkuId(skuInfo.getId());
-            cartInfo.setCartPrice(skuInfo.getPrice().multiply(new BigDecimal(cartInfo.getSkuNum())));
+            cartInfo.setCartPrice(skuInfo.getPrice());
             cartInfo.setUserId(userId);
             cartInfo.setSkuName(skuInfo.getSkuName());
             cartInfo.setSkuNum(cartInfo.getSkuNum());
@@ -112,7 +112,7 @@ public class CartServiceImpl implements CartService {
         if(null!=cartInfos&&cartInfos.size()>0){
             for (CartInfo info : cartInfos) {
                 info.setSkuPrice(productFeignClient.getPrice(info.getSkuId()));
-                info.setCartPrice(productFeignClient.getPrice(info.getSkuId()).multiply(new BigDecimal(info.getSkuNum())));
+                //info.setCartPrice(productFeignClient.getPrice(info.getSkuId()).multiply(new BigDecimal(info.getSkuNum())));
             }
         }
         return cartInfos;

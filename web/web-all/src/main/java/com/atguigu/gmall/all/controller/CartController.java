@@ -21,7 +21,7 @@ public class CartController {
     @RequestMapping("addCart.html")
     public String addCart(Long skuId, Long skuNum, CartInfo cartInfo){
         cartFeignClient.addCart(cartInfo);
-       return "redirect:http://cart.gmall.com/cart/addCart.html";
+        return "redirect:http://cart.gmall.com/cart/addCart.html?skuNum="+cartInfo.getSkuNum();
         //return "redirect:/cart/addCart.html?skuNum="+cartInfo.getSkuNum();
     }
 
