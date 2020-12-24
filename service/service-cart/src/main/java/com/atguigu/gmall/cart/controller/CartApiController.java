@@ -88,6 +88,19 @@ public class CartApiController {
         cartService.checkCart(cartInfo);
         return Result.ok();
     }
-
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/18 13:04
+     * @description 根据我们的userId来查询我们的购物车的商品信息
+     * @param userId
+     * @return java.util.List<com.atguigu.gmall.model.cart.CartInfo>
+     **/
+    @RequestMapping("cartList/{userId}")
+    public List<CartInfo> cartList(@PathVariable("userId") String userId){
+        CartInfo cartInfo = new CartInfo();
+        cartInfo.setUserId(userId);
+        List<CartInfo> cartInfos = cartService.cartList(cartInfo);
+        return cartInfos;
+    }
 
 }

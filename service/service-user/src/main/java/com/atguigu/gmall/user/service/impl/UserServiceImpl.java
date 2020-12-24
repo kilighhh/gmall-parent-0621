@@ -2,7 +2,9 @@ package com.atguigu.gmall.user.service.impl;
 
 import com.atguigu.gmall.common.constant.RedisConst;
 import com.atguigu.gmall.common.util.MD5;
+import com.atguigu.gmall.model.user.UserAddress;
 import com.atguigu.gmall.model.user.UserInfo;
+import com.atguigu.gmall.user.mapper.UserAddressMapper;
 import com.atguigu.gmall.user.mapper.UserMapper;
 import com.atguigu.gmall.user.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -25,6 +28,8 @@ public class UserServiceImpl implements UserService {
   private RedisTemplate redisTemplate;
   @Autowired
   private UserMapper userMapper;
+  @Autowired
+  private UserAddressMapper userAddressMapper;
   /***
    * @author Kilig Zong
    * @date 2020/12/15 17:59
@@ -66,5 +71,20 @@ public class UserServiceImpl implements UserService {
             return userInfo;
         }
 
+    }
+
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/18 12:21
+     * @description 根据我们的userId查询我们的用户的地址
+     * @param userId
+     * @return java.util.List<com.atguigu.gmall.model.user.UserAddress>
+     **/
+    @Override
+    public List<UserAddress> findUserAddressListByUserId(String userId) {
+        QueryWrapper<UserAddress> wrapper = new QueryWrapper<>();
+        wrapper.eq("user_id",userId);
+        List<UserAddress> addresses = userAddressMapper.selectList(wrapper);
+        return addresses;
     }
 }
