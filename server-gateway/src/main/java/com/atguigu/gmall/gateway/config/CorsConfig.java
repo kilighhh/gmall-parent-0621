@@ -7,7 +7,7 @@ import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 /***
- * @author Kilig Zong
+ * @author Kilig Zong  DISTINCT
  * @date 2020/12/15 11:47
  * @description 这个类是用来处理跨域问题
  * @return

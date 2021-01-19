@@ -3,6 +3,7 @@ package com.atguigu.gmall.activity.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.atguigu.gmall.activity.mapper.SeckillMapper;
 import com.atguigu.gmall.activity.service.SeckillService;
+import com.atguigu.gmall.model.activity.OrderRecode;
 import com.atguigu.gmall.model.activity.SeckillGoods;
 import com.atguigu.gmall.model.activity.UserRecode;
 import com.atguigu.gmall.mq.service.RabbitService;
@@ -112,5 +113,68 @@ public class SeckillServiceImpl implements SeckillService {
             map.put("success",false);
             return map;
         }
+    }
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/25 19:30
+     * @description 检查我们是否生成了订单
+     * @param userId
+     * @return com.atguigu.gmall.model.activity.OrderRecode
+     **/
+    @Override
+    public OrderRecode checkOrderRecode(String userId) {
+        OrderRecode orderRecode=(OrderRecode)redisTemplate.boundHashOps("seckill:orders").get(userId);
+        return orderRecode;
+    }
+
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/25 19:30
+     * @description 检查我们是否生成订单下单成功
+     * @param userId
+     * @return java.lang.String
+     **/
+    @Override
+    public String checkTrueOrder(String userId) {
+      String orderId =(String) redisTemplate.boundHashOps("seckill:orders:users").get(userId);
+        return orderId;
+    }
+
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/25 20:12
+     * @description 在我们的缓存当中获取我们的秒杀商品
+     * @param userId
+     * @return com.atguigu.gmall.model.activity.OrderRecode
+     **/
+    @Override
+    public OrderRecode getOrderRecode(String userId) {
+        OrderRecode orderRecode =(OrderRecode)redisTemplate.boundHashOps("seckill:orders").get(userId);
+        return orderRecode;
+    }
+
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/25 20:37
+     * @description 根据我们的用户id删除我们的预订单
+     * @param userId
+     * @return void
+     **/
+    @Override
+    public void deleteOrderRecode(String userId) {
+        redisTemplate.boundHashOps("seckill:orders").delete(userId);
+    }
+
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/25 20:41
+     * @description 生成我们的订单存放在redis
+     * @param userId
+     * @param orderId
+     * @return void
+     **/
+    @Override
+    public void genOrderUsers(String userId, String orderId) {
+    redisTemplate.boundHashOps("seckill:orders:users").put(userId,orderId);
     }
 }
