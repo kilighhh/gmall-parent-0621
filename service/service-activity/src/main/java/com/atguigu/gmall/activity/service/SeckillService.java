@@ -1,5 +1,6 @@
 package com.atguigu.gmall.activity.service;
 
+import com.atguigu.gmall.model.activity.OrderRecode;
 import com.atguigu.gmall.model.activity.SeckillGoods;
 
 import java.util.List;
@@ -18,4 +19,15 @@ public interface SeckillService {
     SeckillGoods getItem(Long skuId);
 
     Map<String, Object> seckillOrder(Long skuId, String userId);
+
+    OrderRecode checkOrderRecode(String userId);
+
+    String checkTrueOrder(String userId);
+
+    OrderRecode getOrderRecode(String userId);
+
+    void deleteOrderRecode(String userId);
+
+    void genOrderUsers(String userId, String orderId);
+
 }

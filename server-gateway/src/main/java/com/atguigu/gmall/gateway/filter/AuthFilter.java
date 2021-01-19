@@ -76,7 +76,7 @@ public class AuthFilter implements GlobalFilter {
             String token=getToken(request);
         Map<String,Object> userMap=null;
         if(!StringUtils.isEmpty(token)){
-            //如果用户登录过的话我们就会获取到我们的token
+            //如果用户登录过的话我们就会获取到我们的存在redis的令牌
             userMap=userFeignClient.verify(token);
         }else {
             //未登录的话我们也会有临时的用户id

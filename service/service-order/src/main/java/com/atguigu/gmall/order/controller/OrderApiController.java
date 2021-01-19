@@ -29,6 +29,18 @@ public class OrderApiController {
     private OrderService orderService;
     /***
      * @author Kilig Zong
+     * @date 2020/12/25 20:31
+     * @description 生成我们的订单,并且返回我们的订单id
+     * @param order
+     * @return java.lang.String
+     **/
+    @RequestMapping("submitOrder")
+    public String submitOrder(@RequestBody OrderInfo order){
+        String orderId = orderService.submitOrder(order, order.getUserId() + "");
+        return orderId;
+    }
+    /***
+     * @author Kilig Zong
      * @date 2020/12/18 12:28
      * @description 根据userId远程调用获取我们的购物车的信息，然后转换成我们的OrderDetail集合
      * @param request

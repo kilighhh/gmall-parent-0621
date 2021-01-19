@@ -103,7 +103,7 @@ public class PaymentApiController {
         //我们成功支付修改订单的消息，以及后续物流系统的消息
         //把我们的对象转化成我们的json对象
         String paymentInfoToJson = JSON.toJSONString(paymentInfo);
-        // 更新订单信息(更新未订单已支付)
+        // 更新订单信息(更新未订单已支付),查询支付状态
         rabbitService.sendMassage("exchange.payment.pay","routing.payment.pay", paymentInfoToJson);
         return "<form action=\"http://payment.gmall.com/paySuccess.html\">\n" +
                 "</form>\n" +

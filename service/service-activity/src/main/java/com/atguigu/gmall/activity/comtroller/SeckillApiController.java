@@ -3,10 +3,16 @@ package com.atguigu.gmall.activity.comtroller;
 import com.atguigu.gmall.activity.service.SeckillService;
 import com.atguigu.gmall.activity.util.CacheHelper;
 import com.atguigu.gmall.common.result.Result;
+import com.atguigu.gmall.common.result.ResultCodeEnum;
 import com.atguigu.gmall.common.util.MD5;
+import com.atguigu.gmall.model.activity.OrderRecode;
 import com.atguigu.gmall.model.activity.SeckillGoods;
+import com.atguigu.gmall.model.order.OrderInfo;
+import com.atguigu.gmall.order.client.OrderFeignClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,6 +26,72 @@ public class SeckillApiController {
 
     @Autowired
     private SeckillService seckillService;
+    @Autowired
+    private OrderFeignClient orderFeignClient;
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/25 20:22
+     * @description 提交我们的订单，生成订单，删除我们的预订单
+     * @param order
+     * @return com.atguigu.gmall.common.result.Result
+     **/
+    @RequestMapping("auth/submitOrder")
+    public Result submitOrder(@RequestBody OrderInfo order,HttpServletRequest request, Model model){
+        //保存我们的订单
+        String userId = request.getHeader("userId");
+        order.setUserId(Long.parseLong(userId));
+        String orderId=orderFeignClient.submitOrder(order);
+        // 删除预订单
+        seckillService.deleteOrderRecode(userId);
+        // 生成已提交用户订单
+        seckillService.genOrderUsers(userId,orderId);
+        return Result.ok(orderId);
+    }
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/25 20:10
+     * @description 根据我们的用户id获取我们的秒杀商品
+     * @param userId
+     * @return com.atguigu.gmall.model.activity.OrderRecode
+     **/
+    @RequestMapping("getOrderRecode/{userId}")
+   public OrderRecode getOrderRecode(@PathVariable("userId")String userId){
+        OrderRecode orderRecode=seckillService.getOrderRecode(userId);
+        return orderRecode;
+    }
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/25 20:50
+     * @description 检查我们的预订单
+     * @param skuId
+     * @param request
+     * @return com.atguigu.gmall.common.result.Result
+     **/
+    //http://api.gmall.com/api/activity/seckill/auth/checkOrder/30
+    @RequestMapping("auth/checkOrder/{skuId}")
+    public Result checkOrder(@PathVariable("skuId") String skuId,HttpServletRequest request){
+        //先获取我们的userId，用户id
+        String userId = request.getHeader("userId");
+        //我们根据检查我们的秒杀的结果返回状态码
+        //先判断是已经下单成功
+        String orderId=seckillService.checkTrueOrder(userId);
+        if(null!=orderId){
+            return Result.build(orderId, ResultCodeEnum.SECKILL_ORDER_SUCCESS);
+        }
+        //判断是否下预订单成功
+        OrderRecode orderRecode=seckillService.checkOrderRecode(userId);
+        if(null!=orderRecode){
+            return Result.build(orderRecode,ResultCodeEnum.SECKILL_SUCCESS);
+        }
+        //判断是否售罄
+        String skuIdForCache=(String)CacheHelper.get(skuId+"");
+        if(null==skuIdForCache||"0".equals(skuIdForCache)){
+            return Result.build(null,ResultCodeEnum.FAIL);
+        }
+        //判断是否在排队
+        return Result.build(null,ResultCodeEnum.SECKILL_RUN);
+
+    }
 
     /***
      * @author Kilig Zong
@@ -96,6 +168,13 @@ public class SeckillApiController {
         return Result.ok(CacheHelper.get(skuId+""));
     }
 
+    /***
+     * @author Kilig Zong
+     * @date 2020/12/25 18:53
+     * @description 我们上架我们需要秒杀的商品，上架到我们的缓存
+     * @param skuId
+     * @return com.atguigu.gmall.common.result.Result
+     **/
     @RequestMapping("putGoods/{skuId}")
     public Result putGoods(@PathVariable ("skuId") Long skuId){
         seckillService.putGoods(skuId);
